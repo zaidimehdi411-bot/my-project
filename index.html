@@ -1,1 +1,34 @@
-<h1>Hello from My Project!</h1>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Blue vs Red</title>
+<style>
+body{margin:0;background:#111;color:white;text-align:center;font-family:Arial}
+canvas{background:#222;border:3px solid white;margin-top:20px}
+</style>
+</head>
+<body>
+<h2>🔵 Blue vs 🔴 Red</h2>
+<canvas id="game" width="800" height="450"></canvas>
+<script>
+const c=document.getElementById("game"),x=c.getContext("2d");
+let blue={x:100,y:200},red={x:650,y:200};
+let keys={};
+onkeydown=e=>keys[e.key]=true;
+onkeyup=e=>keys[e.key]=false;
+
+function draw(){
+ x.clearRect(0,0,800,450);
+ x.fillStyle="blue";x.fillRect(blue.x,blue.y,40,40);
+ x.fillStyle="red";x.fillRect(red.x,red.y,40,40);
+ if(keys.ArrowLeft)blue.x-=4;
+ if(keys.ArrowRight)blue.x+=4;
+ if(keys.ArrowUp)blue.y-=4;
+ if(keys.ArrowDown)blue.y+=4;
+ requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
