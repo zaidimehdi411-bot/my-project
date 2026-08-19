@@ -83,3 +83,16 @@ game();
 </script>
 </body>
 </html>
+
+<style>
+.controls{display:flex;justify-content:center;gap:10px;margin:15px;flex-wrap:wrap}
+button{font-size:22px;padding:14px 20px;border-radius:12px;border:2px solid white;background:#333;color:white}
+</style>
+
+<div class="controls">
+<button ontouchstart="keys.arrowleft=true" ontouchend="keys.arrowleft=false">⬅️</button>
+<button ontouchstart="keys.arrowup=true" ontouchend="keys.arrowup=false">⬆️</button>
+<button ontouchstart="keys.arrowdown=true" ontouchend="keys.arrowdown=false">⬇️</button>
+<button ontouchstart="keys.arrowright=true" ontouchend="keys.arrowright=false">➡️</button>
+<button ontouchstart="keys[' ']=true" ontouchend="keys[' ']=false">👊</button>
+</div>
