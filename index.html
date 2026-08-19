@@ -1,34 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Blue vs Red</title>
 <style>
 body{margin:0;background:#111;color:white;text-align:center;font-family:Arial}
-canvas{background:#222;border:3px solid white;margin-top:20px}
+canvas{background:#222;border:3px solid white;max-width:95%;margin-top:15px}
 </style>
 </head>
 <body>
 <h2>🔵 Blue vs 🔴 Red</h2>
+<p>الأزرق: الأسهم + Space | الأحمر: WASD + F</p>
 <canvas id="game" width="800" height="450"></canvas>
+
 <script>
-const c=document.getElementById("game"),x=c.getContext("2d");
-let blue={x:100,y:200},red={x:650,y:200};
+const c=document.getElementById("game"),ctx=c.getContext("2d");
 let keys={};
-onkeydown=e=>keys[e.key]=true;
-onkeyup=e=>keys[e.key]=false;
+
+onkeydown=e=>keys[e.key.toLowerCase()]=true;
+onkeyup=e=>keys[e.key.toLowerCase()]=false;
+
+let blue={x:100,y:200,hp:100};
+let red={x:660,y:200,hp:100};
+
+function hit(a,b){
+ return Math.abs(a.x-b.x)<55 && Math.abs(a.y-b.y)<55;
+}
+
+function update(){
+ if(keys.arrowleft) blue.x-=4;
+ if(keys.arrowright) blue.x+=4;
+ if(keys.arrowup) blue.y-=4;
+ if(keys.arrowdown) blue.y+=4;
+
+ if(keys.a) red.x-=4;
+ if(keys.d) red.x+=4;
+ if(keys.w) red.y-=4;
+ if(keys.s) red.y+=4;
+
+ blue.x=Math.max(0,Math.min(760,blue.x));
+ blue.y=Math.max(50,Math.min(410,blue.y));
+ red.x=Math.max(0,Math.min(760,red.x));
+ red.y=Math.max(50,Math.min(410,red.y));
+
+ if(keys[" "] && hit(blue,red)){
+   red.hp=Math.max(0,red.hp-1);
+ }
+ if(keys.f && hit(red,blue)){
+   blue.hp=Math.max(0,blue.hp-1);
+ }
+}
 
 function draw(){
- x.clearRect(0,0,800,450);
- x.fillStyle="blue";x.fillRect(blue.x,blue.y,40,40);
- x.fillStyle="red";x.fillRect(red.x,red.y,40,40);
- if(keys.ArrowLeft)blue.x-=4;
- if(keys.ArrowRight)blue.x+=4;
- if(keys.ArrowUp)blue.y-=4;
- if(keys.ArrowDown)blue.y+=4;
- requestAnimationFrame(draw);
+ ctx.clearRect(0,0,800,450);
+
+ ctx.fillStyle="white";
+ ctx.fillText("Blue HP: "+blue.hp,20,25);
+ ctx.fillText("Red HP: "+red.hp,700,25);
+
+ ctx.fillStyle="blue";
+ ctx.fillRect(blue.x,blue.y,40,40);
+
+ ctx.fillStyle="red";
+ ctx.fillRect(red.x,red.y,40,40);
+
+ if(blue.hp===0 || red.hp===0){
+   ctx.fillStyle="white";
+   ctx.font="35px Arial";
+   ctx.fillText(blue.hp===0?"RED WINS!":"BLUE WINS!",280,120);
+ }
+
+ ctx.font="16px Arial";
 }
-draw();
+
+function game(){
+ update();
+ draw();
+ requestAnimationFrame(game);
+}
+game();
 </script>
 </body>
 </html>
