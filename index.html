@@ -398,7 +398,7 @@ Company<span>Desk</span>
 <div class="nav">
 
 <button onclick="showDashboard()">📊 لوحة التحكم</button>
-<button onclick="document.querySelector('.main').style.display='none'; document.getElementById('maintenancePage').style.display='block';">🛠️ طلبات الصيانة</button>
+<button onclick="showMaintenance()">🛠️ طلبات الصيانة</button>
 <button onclick="showEmployees()">👥 الموظفون</button>
 <button onclick="showDepartments()">🏢 الأقسام</button>
 <button>📋 التقارير</button>
@@ -1730,8 +1730,12 @@ function showDepartments(){
 }
 
 function showMaintenance(){
-    document.querySelector(".main").style.display = "none";
+    hideAllPages();
+    const main = document.querySelector(".main");
     const page = document.getElementById("maintenancePage");
+    if(main){
+        main.style.display = "block";
+    }
     if(page){
         page.style.display = "block";
     }
