@@ -932,6 +932,21 @@ function login(){
 }
 
 
+function restoreLogin(){
+ const saved=localStorage.getItem("companydesk_user");
+ if(!saved) return;
+
+ try{
+  const user=JSON.parse(saved);
+  if(user && user.username && user.role){
+   showApp();
+  }
+ }catch(error){
+  console.error("تعذر استعادة تسجيل الدخول:",error);
+  localStorage.removeItem("companydesk_user");
+ }
+}
+
 function showApp(){
  applyPermissions();
  document.getElementById("loginPage").style.display="none";
@@ -945,6 +960,8 @@ function showApp(){
   profile.textContent="👤 "+user.username+" — "+(user.role || "مستخدم");
  }
 }
+
+restoreLogin();
 
 let tickets = [];
 
