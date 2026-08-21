@@ -618,28 +618,411 @@ style="width:100%;padding:12px;margin:6px 0">
 </section>
 
 <section id="reportsPage" style="display:none">
-<div class="top">
-<div>
-<h1>📋 التقارير</h1>
-<p style="color:#718096">ملخص أداء طلبات الصيانة</p>
-</div>
-</div>
 
-<div class="stats">
-<div class="stat"><div class="icon">📥</div><small>كل الطلبات</small><strong id="reportTotal">0</strong></div>
-<div class="stat"><div class="icon">🆕</div><small>جديدة</small><strong id="reportNew">0</strong></div>
-<div class="stat"><div class="icon">🟡</div><small>قيد التنفيذ</small><strong id="reportWorking">0</strong></div>
-<div class="stat"><div class="icon">✅</div><small>تم حلها</small><strong id="reportDone">0</strong></div>
-</div>
+<style>
+.report-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:15px;
+margin-bottom:22px;
+}
+.report-header h1{margin:0;font-size:28px}
+.report-header p{margin:6px 0;color:#718096}
+
+.report-grid{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:15px;
+margin-bottom:20px;
+}
+
+.report-card{
+background:white;
+border-radius:16px;
+padding:20px;
+box-shadow:0 5px 20px rgba(0,0,0,.06);
+border:1px solid #edf2f7;
+}
+
+.report-card .r-icon{
+font-size:28px;
+margin-bottom:10px;
+}
+
+.report-card small{
+display:block;
+color:#718096;
+margin-bottom:7px;
+}
+
+.report-card strong{
+font-size:30px;
+display:block;
+}
+
+.report-layout{
+display:grid;
+grid-template-columns:1.2fr .8fr;
+gap:20px;
+margin-bottom:20px;
+}
+
+.report-title{
+font-size:19px;
+font-weight:700;
+margin-bottom:20px;
+}
+
+.progress-row{
+margin-bottom:18px;
+}
+
+.progress-info{
+display:flex;
+justify-content:space-between;
+margin-bottom:7px;
+font-size:14px;
+}
+
+.report-progress{
+height:12px;
+background:#edf2f7;
+border-radius:20px;
+overflow:hidden;
+}
+
+.report-progress div{
+height:100%;
+width:0%;
+border-radius:20px;
+transition:width .5s ease;
+}
+
+.report-table{
+width:100%;
+border-collapse:collapse;
+}
+
+.report-table th,
+.report-table td{
+padding:13px 10px;
+border-bottom:1px solid #edf2f7;
+text-align:right;
+}
+
+.report-table th{
+color:#718096;
+font-size:13px;
+}
+
+.report-table td{
+font-size:14px;
+}
+
+.report-empty{
+text-align:center;
+padding:25px;
+color:#718096;
+}
+
+.report-badge{
+display:inline-block;
+padding:5px 10px;
+border-radius:20px;
+font-size:12px;
+font-weight:600;
+}
+
+.report-new{background:#e8f1ff;color:#2563eb}
+.report-working{background:#fff5d6;color:#a16207}
+.report-done{background:#e7f8ee;color:#16803c}
+.report-high{background:#ffe8e8;color:#c0392b}
+.report-medium{background:#fff5d6;color:#a16207}
+.report-low{background:#e7f8ee;color:#16803c}
+
+.report-list{
+display:flex;
+flex-direction:column;
+gap:13px;
+}
+
+.report-list-item{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:15px;
+padding:12px 0;
+border-bottom:1px solid #edf2f7;
+}
+
+.report-list-item:last-child{
+border-bottom:0;
+}
+
+.report-person{
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.report-avatar{
+width:38px;
+height:38px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#eef4ff;
+font-size:18px;
+}
+
+.report-number{
+font-size:13px;
+color:#718096;
+}
+
+.report-refresh{
+border:0;
+padding:10px 16px;
+border-radius:10px;
+cursor:pointer;
+background:#4f8cff;
+color:white;
+font-size:14px;
+}
+
+@media(max-width:1000px){
+.report-grid{grid-template-columns:repeat(2,1fr)}
+.report-layout{grid-template-columns:1fr}
+}
+
+@media(max-width:600px){
+.report-grid{grid-template-columns:1fr}
+.report-header{align-items:flex-start;flex-direction:column}
+.report-card strong{font-size:25px}
+.report-table{font-size:12px}
+.report-table th,.report-table td{padding:9px 5px}
+}
+</style>
 
 <div class="content">
-<div class="card">
-<h2>📊 حسب الأولوية</h2>
-<p>🔴 عاجلة: <strong id="reportHigh">0</strong></p>
-<p>🟡 متوسطة: <strong id="reportMedium">0</strong></p>
-<p>🟢 عادية: <strong id="reportLow">0</strong></p>
+
+<div class="report-header">
+<div>
+<h1>📋 التقارير والإحصائيات</h1>
+<p>نظرة شاملة على أداء طلبات الصيانة في الشركة</p>
+</div>
+
+<button class="report-refresh" onclick="showReports()">
+🔄 تحديث التقارير
+</button>
+</div>
+
+<div class="report-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+<button class="report-tab active" onclick="switchReportTab('summary',this)">📊 الملخص</button>
+<button class="report-tab" onclick="switchReportTab('departments',this)">🏢 الأقسام</button>
+<button class="report-tab" onclick="switchReportTab('employees',this)">👥 الموظفون</button>
+<button class="report-tab" onclick="switchReportTab('recent',this)">🕐 آخر الطلبات</button>
+</div>
+
+<div id="reportTabSummary" class="report-tab-content">
+
+<div class="report-grid">
+
+<div class="report-card">
+<div class="r-icon">📥</div>
+<small>إجمالي الطلبات</small>
+<strong id="reportTotal">0</strong>
+</div>
+
+<div class="report-card">
+<div class="r-icon">🆕</div>
+<small>طلبات جديدة</small>
+<strong id="reportNewText">0</strong>
+</div>
+
+<div class="report-card">
+<div class="r-icon">🟡</div>
+<small>قيد التنفيذ</small>
+<strong id="reportWorkingText">0</strong>
+</div>
+
+<div class="report-card">
+<div class="r-icon">✅</div>
+<small>تم حلها</small>
+<strong id="reportDoneText">0</strong>
+</div>
+
+<div class="report-card">
+<div class="r-icon">🔴</div>
+<small>طلبات عاجلة</small>
+<strong id="reportHigh">0</strong>
+</div>
+
+</div>
+
+<div class="report-layout">
+
+<div class="report-card">
+
+<div class="report-title">📊 حالة الطلبات</div>
+
+<div class="progress-row">
+<div class="progress-info">
+<span>🆕 جديدة</span>
+<strong id="reportNewPercent">0%</strong>
+</div>
+<div class="report-progress">
+<div id="reportNewBar" style="background:#4f8cff"></div>
 </div>
 </div>
+
+<div class="progress-row">
+<div class="progress-info">
+<span>🟡 قيد التنفيذ</span>
+<strong id="reportWorkingPercent">0%</strong>
+</div>
+<div class="report-progress">
+<div id="reportWorkingBar" style="background:#f1c40f"></div>
+</div>
+</div>
+
+<div class="progress-row">
+<div class="progress-info">
+<span>✅ تم حلها</span>
+<strong id="reportDonePercent">0%</strong>
+</div>
+<div class="report-progress">
+<div id="reportDoneBar" style="background:#2ecc71"></div>
+</div>
+</div>
+
+<div style="margin-top:25px;padding:15px;background:#f8fafc;border-radius:12px;text-align:center">
+<div style="color:#718096;font-size:13px">نسبة الإنجاز</div>
+<strong id="reportCompletion" style="font-size:30px">0%</strong>
+</div>
+
+</div>
+
+<div class="report-card">
+
+<div class="report-title">🎯 حسب الأولوية</div>
+
+<div class="progress-row">
+<div class="progress-info">
+<span>🔴 عاجلة</span>
+<strong id="reportHighPercent">0%</strong>
+</div>
+<div class="report-progress">
+<div id="reportHighBar" style="background:#e74c3c"></div>
+</div>
+</div>
+
+<div class="progress-row">
+<div class="progress-info">
+<span>🟡 متوسطة</span>
+<strong id="reportMediumPercent">0%</strong>
+</div>
+<div class="report-progress">
+<div id="reportMediumBar" style="background:#f1c40f"></div>
+</div>
+</div>
+
+<div class="progress-row">
+<div class="progress-info">
+<span>🟢 عادية</span>
+<strong id="reportLowPercent">0%</strong>
+</div>
+<div class="report-progress">
+<div id="reportLowBar" style="background:#2ecc71"></div>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="reportTabDepartments" class="report-tab-content" style="display:none">
+
+<div class="report-card">
+
+<div class="report-title">🏢 أداء الأقسام</div>
+
+<p style="color:#718096;margin-top:-10px">
+توزيع طلبات الصيانة حسب الأقسام
+</p>
+
+<div id="reportDepartments" class="report-list">
+<div class="report-empty">جاري تحميل البيانات...</div>
+</div>
+
+</div>
+
+</div>
+
+
+<div id="reportTabEmployees" class="report-tab-content" style="display:none">
+
+<div class="report-card">
+
+<div class="report-title">👥 أداء الموظفين</div>
+
+<p style="color:#718096;margin-top:-10px">
+عدد الطلبات المسندة إلى كل موظف
+</p>
+
+<div id="reportEmployees" class="report-list">
+<div class="report-empty">جاري تحميل البيانات...</div>
+</div>
+
+</div>
+
+</div>
+
+
+<div id="reportTabRecent" class="report-tab-content" style="display:none">
+
+<div class="report-card">
+
+<div class="report-title">🕐 آخر الطلبات</div>
+
+<p style="color:#718096;margin-top:-10px">
+أحدث طلبات الصيانة المسجلة في الشركة
+</p>
+
+<div style="overflow-x:auto">
+
+<table class="report-table">
+
+<thead>
+<tr>
+<th>#</th>
+<th>الطلب</th>
+<th>الموظف</th>
+<th>الأولوية</th>
+<th>الحالة</th>
+<th>التاريخ</th>
+</tr>
+</thead>
+
+<tbody id="reportRecent">
+<tr>
+<td colspan="6" class="report-empty">جاري تحميل البيانات...</td>
+</tr>
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
 </section>
 
 <main class="main">
@@ -1607,15 +1990,26 @@ function toggleTheme(){
 
 function hideAllPages(){
 
- document.querySelector(".main").style.display="none";
- document.getElementById("employeesPage").style.display="none";
- document.getElementById("settingsPage").style.display="none";
+ const ids=[
+  "employeesPage",
+  "settingsPage",
+  "maintenancePage",
+  "departmentsPage",
+  "reportsPage"
+ ];
 
- const maintenance = document.getElementById("maintenancePage");
- if(maintenance) maintenance.style.display="none";
+ const main=document.querySelector(".main");
 
- const departments = document.getElementById("departmentsPage");
- if(departments) departments.style.display="none";
+ if(main){
+  main.style.display="none";
+ }
+
+ ids.forEach(id=>{
+  const el=document.getElementById(id);
+  if(el){
+   el.style.display="none";
+  }
+ });
 
 }
 
@@ -1773,37 +2167,245 @@ function showDepartments(){
 
 function showMaintenance(){
     hideAllPages();
+
     const main = document.querySelector(".main");
     const page = document.getElementById("maintenancePage");
+
     if(main){
         main.style.display = "block";
     }
+
     if(page){
         page.style.display = "block";
     }
+
+    const top = main ? main.querySelector(".top") : null;
+    const stats = main ? main.querySelector(".stats") : null;
+
+    if(top){
+        top.style.display = "none";
+    }
+
+    if(stats){
+        stats.style.display = "none";
+    }
+}
+
+function switchReportTab(tab, button){
+ const contents = document.querySelectorAll(".report-tab-content");
+ contents.forEach(el => el.style.display = "none");
+
+ const target = document.getElementById("reportTab" + tab.charAt(0).toUpperCase() + tab.slice(1));
+ if(target) target.style.display = "block";
+
+ document.querySelectorAll(".report-tab").forEach(btn => {
+  btn.classList.remove("active");
+ });
+
+ if(button) button.classList.add("active");
 }
 
 function showReports(){
- hideAllPages();
- const page=document.getElementById("reportsPage");
- if(page) page.style.display="block";
 
- fetch("/api/reports", {credentials:"include"})
+ hideAllPages();
+
+ const page=document.getElementById("reportsPage");
+
+ if(page){
+  page.style.display="block";
+ }
+
+ fetch("/api/reports",{credentials:"include"})
  .then(response=>response.json())
  .then(data=>{
-  if(data.error){ alert(data.error); return; }
-  document.getElementById("reportTotal").textContent=data.total;
-  document.getElementById("reportNew").textContent=data.new;
-  document.getElementById("reportWorking").textContent=data.working;
-  document.getElementById("reportDone").textContent=data.done;
-  document.getElementById("reportHigh").textContent=data.high;
-  document.getElementById("reportMedium").textContent=data.medium;
-  document.getElementById("reportLow").textContent=data.low;
+
+  if(data.error){
+   alert(data.error);
+   return;
+  }
+
+  const total=data.total || 0;
+
+  const percent=(value)=>{
+   if(!total) return 0;
+   return Math.round((value/total)*100);
+  };
+
+  const setText=(id,value)=>{
+   const el=document.getElementById(id);
+   if(el) el.textContent=value;
+  };
+
+  const setBar=(id,value)=>{
+   const el=document.getElementById(id);
+   if(el) el.style.width=value+"%";
+  };
+
+  setText("reportTotal",total);
+  setText("reportNewText",data.new);
+  setText("reportWorkingText",data.working);
+  setText("reportDoneText",data.done);
+  setText("reportHigh",data.high);
+
+  const newPercent=percent(data.new);
+  const workingPercent=percent(data.working);
+  const donePercent=percent(data.done);
+
+  setText("reportNewPercent",newPercent+"%");
+  setText("reportWorkingPercent",workingPercent+"%");
+  setText("reportDonePercent",donePercent+"%");
+
+  setBar("reportNewBar",newPercent);
+  setBar("reportWorkingBar",workingPercent);
+  setBar("reportDoneBar",donePercent);
+
+  setText("reportCompletion",donePercent+"%");
+
+  const highPercent=percent(data.high);
+  const mediumPercent=percent(data.medium);
+  const lowPercent=percent(data.low);
+
+  setText("reportHighPercent",highPercent+"%");
+  setText("reportMediumPercent",mediumPercent+"%");
+  setText("reportLowPercent",lowPercent+"%");
+
+  setBar("reportHighBar",highPercent);
+  setBar("reportMediumBar",mediumPercent);
+  setBar("reportLowBar",lowPercent);
+
+  const departments=document.getElementById("reportDepartments");
+
+  if(departments){
+
+   if(!data.departments || !data.departments.length){
+
+    departments.innerHTML='<div class="report-empty">لا توجد بيانات للأقسام</div>';
+
+   }else{
+
+    departments.innerHTML=data.departments.map((item)=>{
+
+     const p=percent(item.count);
+
+     return `
+     <div class="report-list-item">
+      <div class="report-person">
+       <div class="report-avatar">🏢</div>
+       <div>
+        <strong>${escapeHtml(item.name)}</strong>
+        <div class="report-number">${item.count} طلب</div>
+       </div>
+      </div>
+      <strong>${p}%</strong>
+     </div>`;
+
+    }).join("");
+
+   }
+  }
+
+  const employees=document.getElementById("reportEmployees");
+
+  if(employees){
+
+   if(!data.employees || !data.employees.length){
+
+    employees.innerHTML='<div class="report-empty">لا توجد بيانات للموظفين</div>';
+
+   }else{
+
+    employees.innerHTML=data.employees.map((item)=>{
+
+     const p=percent(item.count);
+
+     return `
+     <div class="report-list-item">
+      <div class="report-person">
+       <div class="report-avatar">👤</div>
+       <div>
+        <strong>${escapeHtml(item.name)}</strong>
+        <div class="report-number">${item.count} طلب</div>
+       </div>
+      </div>
+      <strong>${p}%</strong>
+     </div>`;
+
+    }).join("");
+
+   }
+  }
+
+  const recent=document.getElementById("reportRecent");
+
+  if(recent){
+
+   if(!data.recent || !data.recent.length){
+
+    recent.innerHTML='<tr><td colspan="6" class="report-empty">لا توجد طلبات</td></tr>';
+
+   }else{
+
+    recent.innerHTML=data.recent.map(item=>{
+
+     let priorityClass="report-medium";
+     let priorityText="متوسط";
+
+     if(item.priority==="high"){
+      priorityClass="report-high";
+      priorityText="عاجل";
+     }
+
+     if(item.priority==="low"){
+      priorityClass="report-low";
+      priorityText="عادي";
+     }
+
+     let statusClass="report-new";
+     let statusText="جديد";
+
+     if(item.status==="working"){
+      statusClass="report-working";
+      statusText="قيد التنفيذ";
+     }
+
+     if(item.status==="done"){
+      statusClass="report-done";
+      statusText="تم الحل";
+     }
+
+     return `
+     <tr>
+      <td>#${item.id}</td>
+      <td><strong>${escapeHtml(item.title || "")}</strong></td>
+      <td>${escapeHtml(item.employee_name || "غير مسند")}</td>
+      <td><span class="report-badge ${priorityClass}">${priorityText}</span></td>
+      <td><span class="report-badge ${statusClass}">${statusText}</span></td>
+      <td>${escapeHtml(item.created_at || "")}</td>
+     </tr>`;
+
+    }).join("");
+
+   }
+  }
+
  })
  .catch(error=>{
+
   console.error(error);
   alert("تعذر تحميل التقارير");
+
  });
+}
+
+function escapeHtml(value){
+
+ return String(value ?? "")
+ .replace(/&/g,"&amp;")
+ .replace(/</g,"&lt;")
+ .replace(/>/g,"&gt;")
+ .replace(/"/g,"&quot;")
+ .replace(/'/g,"&#039;");
+
 }
 
 function showDashboard(){
