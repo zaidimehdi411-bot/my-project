@@ -507,6 +507,65 @@ def update_ticket_status(ticket_id):
     })
 
 
+@app.route("/api/reports", methods=["GET"])
+def get_reports():
+    if not session.get("user_id"):
+        return jsonify({"error": "يجب تسجيل الدخول أولًا"}), 401
+
+    if session.get("role") != "manager":
+        return jsonify({"error": "غير مسموح"}), 403
+
+    company_id = session.get("company_id")
+    conn = get_db()
+
+    total = conn.execute(
+        "SELECT COUNT(*) FROM tickets WHERE company_id = ?",
+        (company_id,)
+    ).fetchone()[0]
+
+    new_count = conn.execute(
+        "SELECT COUNT(*) FROM tickets WHERE company_id = ? AND status = 'new'",
+        (company_id,)
+    ).fetchone()[0]
+
+    working_count = conn.execute(
+        "SELECT COUNT(*) FROM tickets WHERE company_id = ? AND status = 'working'",
+        (company_id,)
+    ).fetchone()[0]
+
+    done_count = conn.execute(
+        "SELECT COUNT(*) FROM tickets WHERE company_id = ? AND status = 'done'",
+        (company_id,)
+    ).fetchone()[0]
+
+    low_count = conn.execute(
+        "SELECT COUNT(*) FROM tickets WHERE company_id = ? AND priority = 'low'",
+        (company_id,)
+    ).fetchone()[0]
+
+    medium_count = conn.execute(
+        "SELECT COUNT(*) FROM tickets WHERE company_id = ? AND priority = 'medium'",
+        (company_id,)
+    ).fetchone()[0]
+
+    high_count = conn.execute(
+        "SELECT COUNT(*) FROM tickets WHERE company_id = ? AND priority = 'high'",
+        (company_id,)
+    ).fetchone()[0]
+
+    conn.close()
+
+    return jsonify({
+        "total": total,
+        "new": new_count,
+        "working": working_count,
+        "done": done_count,
+        "low": low_count,
+        "medium": medium_count,
+        "high": high_count
+    })
+
+
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json() or {}

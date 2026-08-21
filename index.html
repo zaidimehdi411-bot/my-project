@@ -401,7 +401,7 @@ Company<span>Desk</span>
 <button onclick="showMaintenance()">🛠️ طلبات الصيانة</button>
 <button onclick="showEmployees()">👥 الموظفون</button>
 <button onclick="showDepartments()">🏢 الأقسام</button>
-<button>📋 التقارير</button>
+<button onclick="showReports()">📋 التقارير</button>
 <button onclick="showSettings()">⚙️ الإعدادات</button>
 
 </div>
@@ -615,6 +615,31 @@ style="width:100%;padding:12px;margin:6px 0">
 
 </div>
 
+</section>
+
+<section id="reportsPage" style="display:none">
+<div class="top">
+<div>
+<h1>📋 التقارير</h1>
+<p style="color:#718096">ملخص أداء طلبات الصيانة</p>
+</div>
+</div>
+
+<div class="stats">
+<div class="stat"><div class="icon">📥</div><small>كل الطلبات</small><strong id="reportTotal">0</strong></div>
+<div class="stat"><div class="icon">🆕</div><small>جديدة</small><strong id="reportNew">0</strong></div>
+<div class="stat"><div class="icon">🟡</div><small>قيد التنفيذ</small><strong id="reportWorking">0</strong></div>
+<div class="stat"><div class="icon">✅</div><small>تم حلها</small><strong id="reportDone">0</strong></div>
+</div>
+
+<div class="content">
+<div class="card">
+<h2>📊 حسب الأولوية</h2>
+<p>🔴 عاجلة: <strong id="reportHigh">0</strong></p>
+<p>🟡 متوسطة: <strong id="reportMedium">0</strong></p>
+<p>🟢 عادية: <strong id="reportLow">0</strong></p>
+</div>
+</div>
 </section>
 
 <main class="main">
@@ -1739,6 +1764,29 @@ function showMaintenance(){
     if(page){
         page.style.display = "block";
     }
+}
+
+function showReports(){
+ hideAllPages();
+ const page=document.getElementById("reportsPage");
+ if(page) page.style.display="block";
+
+ fetch("/api/reports", {credentials:"include"})
+ .then(response=>response.json())
+ .then(data=>{
+  if(data.error){ alert(data.error); return; }
+  document.getElementById("reportTotal").textContent=data.total;
+  document.getElementById("reportNew").textContent=data.new;
+  document.getElementById("reportWorking").textContent=data.working;
+  document.getElementById("reportDone").textContent=data.done;
+  document.getElementById("reportHigh").textContent=data.high;
+  document.getElementById("reportMedium").textContent=data.medium;
+  document.getElementById("reportLow").textContent=data.low;
+ })
+ .catch(error=>{
+  console.error(error);
+  alert("تعذر تحميل التقارير");
+ });
 }
 
 function showDashboard(){
